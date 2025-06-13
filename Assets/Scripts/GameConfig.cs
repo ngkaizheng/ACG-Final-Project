@@ -13,7 +13,7 @@ public static class GameConfig
 
     // UI settings
     public const string MainMenuSceneName = "MainMenu";
-    public const string LobbySceneName = "Lobby";
+    public const string GameSceneName = "Game";
 }
 
 public static class UISettings

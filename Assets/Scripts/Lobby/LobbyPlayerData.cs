@@ -32,6 +32,8 @@ public class LobbyPlayerData : NetworkBehaviour
         {
             RPC_SetNickname(PlayerNickname.Instance.GetNickname());
         }
+
+        DontDestroyOnLoad(gameObject);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]

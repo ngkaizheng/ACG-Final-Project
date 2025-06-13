@@ -1,6 +1,7 @@
 using Fusion;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 {
@@ -33,8 +34,8 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     private void SpawnPlayerData(PlayerRef player)
     {
         var playerObj = Runner.Spawn(_lobbyPlayerPrefab, position: Vector3.zero, inputAuthority: player);
-        playerObj.transform.SetParent(transform, false);
-        playerObj.name = "LobbyPlayer_" + Players.Count + 1;
+        // playerObj.transform.SetParent(transform, false);
+        playerObj.name = "LobbyPlayer_" + player.ToString();
 
         Players.Add(playerObj.GetComponent<LobbyPlayerData>());
     }
@@ -73,7 +74,10 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
         if (Runner.IsServer && Players.Count > 0)
         {
+            Runner.SessionInfo.IsOpen = false; // Lock the session
             Debug.Log("Starting game with " + Players.Count + " players.");
+            SceneRef gameScene = SceneRef.FromIndex(SceneUtility.GetBuildIndexByScenePath($"Assets/Scenes/{GameConfig.GameSceneName}.unity"));
+            Runner.LoadScene(gameScene, LoadSceneMode.Single);
         }
     }
 
