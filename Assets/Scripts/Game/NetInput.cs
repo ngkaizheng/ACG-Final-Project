@@ -9,6 +9,7 @@ public enum InputButton
     RightClick,
     Escape,
     Reload,
+    E,
 }
 
 public struct NetInput : INetworkInput

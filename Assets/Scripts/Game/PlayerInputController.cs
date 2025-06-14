@@ -3,11 +3,17 @@ using Fusion;
 public class PlayerInputController : NetworkBehaviour
 {
     private Player _player;
+    private PlayerTexture _playerTexture;
     [Networked] private NetworkButtons PreviousButtons { get; set; }
 
     public void Initialize(Player player)
     {
         _player = player;
+    }
+
+    private void Awake()
+    {
+        _playerTexture = GetComponent<PlayerTexture>();
     }
 
     public override void FixedUpdateNetwork()
@@ -34,6 +40,11 @@ public class PlayerInputController : NetworkBehaviour
         if (input.Buttons.WasPressed(previousButtons, InputButton.Reload))
         {
             _player.Reload();
+        }
+
+        if (input.Buttons.WasPressed(previousButtons, InputButton.E))
+        {
+            _playerTexture.NextTexture();
         }
     }
 }

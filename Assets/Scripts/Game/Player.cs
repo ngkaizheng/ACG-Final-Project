@@ -7,6 +7,8 @@ public class Player : NetworkBehaviour
     [Header("Player Settings")]
     [SerializeField] private float _rotationSpeed = 10f;
 
+    [Networked] public NetworkHealth Health { get; private set; }
+
     private NetworkCharacterController _cc;
     private CharacterController _characterController;
     private PlayerInputController _inputController;
@@ -18,13 +20,16 @@ public class Player : NetworkBehaviour
         _cc = GetComponent<NetworkCharacterController>();
         _characterController = GetComponent<CharacterController>();
         _inputController = GetComponent<PlayerInputController>();
-        _inputController.Initialize(this);
 
         _gun = GetComponentInChildren<Gun>();
+
+        _inputController.Initialize(this);
     }
 
     public override void Spawned()
     {
+        Health = GetComponent<NetworkHealth>();
+
         if (Object.InputAuthority == Runner.LocalPlayer)
         {
             CameraController.Instance.SetFollowTarget(transform);
@@ -119,6 +124,14 @@ public class Player : NetworkBehaviour
     {
         Debug.Log("Reload Action Triggered");
         // Implement reload action logic here
+    }
+    #endregion
+
+    #region Event Handlers
+    private void HandleDeath(PlayerRef killer)
+    {
+        Debug.Log($"{Object.InputAuthority} has died, killed by {killer}");
+        // Handle player death logic here, such as respawning or updating UI
     }
     #endregion
 }

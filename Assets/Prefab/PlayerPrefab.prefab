@@ -126,13 +126,17 @@ MonoBehaviour:
     type: 3}
   BulletTrail: {fileID: 328621789431213768, guid: 43559d27d223bf340b413fde1315c256,
     type: 3}
-  ShootDelay: 0.1
+  ShootDelay: 0.2
+  spreadAngle: 5
   Speed: 100
-  Mask:
+  HitMask:
     serializedVersion: 2
-    m_Bits: 0
-  BouncingBullets: 0
+    m_Bits: 1
+  BounceMask:
+    serializedVersion: 2
+    m_Bits: 1
   BounceDistance: 10
+  DamagePerShot: 10
 --- !u!1 &2952089704861911874
 GameObject:
   m_ObjectHideFlags: 0
@@ -145,7 +149,7 @@ GameObject:
   - component: {fileID: 1845503554885941278}
   - component: {fileID: 7527432334447974803}
   - component: {fileID: 14492375529195053}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -286,7 +290,7 @@ GameObject:
   - component: {fileID: 530286976568462961}
   - component: {fileID: 2062939852724745135}
   - component: {fileID: 7101389003299269386}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -393,6 +397,8 @@ GameObject:
   - component: {fileID: 7792519305143442586}
   - component: {fileID: -6734532799048242618}
   - component: {fileID: 3170012487458590379}
+  - component: {fileID: 4284587754461609438}
+  - component: {fileID: 3032601993700034023}
   m_Layer: 0
   m_Name: PlayerPrefab
   m_TagString: Untagged
@@ -436,6 +442,9 @@ MonoBehaviour:
   - {fileID: 7792519305143442586}
   - {fileID: -6734532799048242618}
   - {fileID: 3170012487458590379}
+  - {fileID: 4284587754461609438}
+  - {fileID: 3032601993700034023}
+  - {fileID: 118436737482801768}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &3608765973845189932
 CharacterController:
@@ -495,6 +504,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rotationSpeed: 10
+  _Health: {fileID: 0}
 --- !u!114 &3170012487458590379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -507,6 +517,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12a5c8cb797f4814ca784831fbe95e03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4284587754461609438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4584410631944328888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce2cb11c87ec35d4d8eba2e098a1733c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _CurrentHealth: 0
+  _MaxHealth: 100
+  _IsAlive:
+    _value: 0
+  _respawnDelay: 3
+  _spawnPoints: []
+  _playerKilledEvent: {fileID: 11400000, guid: 02f97e57b988c6c48b52e8045559b96b, type: 2}
+  _playerRespawnedEvent: {fileID: 11400000, guid: c8dfeac9c72781f4cb7122bf1adf4049,
+    type: 2}
+--- !u!114 &3032601993700034023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4584410631944328888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef55efdc5e1392c4185d47a466c78f02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRenderer: {fileID: 7527432334447974803}
 --- !u!1 &5455817016872099831
 GameObject:
   m_ObjectHideFlags: 0
@@ -707,10 +751,20 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1861370299051176881, guid: 69661e8fd815c1345846dc70a4a27941,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3183098084225122141, guid: 69661e8fd815c1345846dc70a4a27941,
         type: 3}
       propertyPath: m_Name
       value: MuzzleFlash01 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3183098084225122141, guid: 69661e8fd815c1345846dc70a4a27941,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7702310581473640345, guid: 69661e8fd815c1345846dc70a4a27941,
         type: 3}
