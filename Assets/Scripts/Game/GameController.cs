@@ -12,8 +12,10 @@ public class GameController : NetworkBehaviour
     [SerializeField] private NetworkObject _playerPrefab;
     [SerializeField] private Transform[] _spawnPoints;
     [SerializeField] private float _respawnDelay = 3f;
+    [SerializeField] private TickTimer _despawnTimer = TickTimer.None;
 
-    [Networked] private TickTimer _respawnTimer { get; set; }
+    [Networked] public NetworkDictionary<PlayerRef, TickTimer> _respawnTimers { get; }
+
     private Dictionary<PlayerRef, NetworkObject> _spawnedPlayers = new Dictionary<PlayerRef, NetworkObject>();
 
     public override void Spawned()
@@ -26,12 +28,13 @@ public class GameController : NetworkBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        if (Runner.IsServer)
-        {
-            SpawnAllPlayers();
-        }
+        // if (Runner.IsServer)
+        // {
+        //     SpawnAllPlayers();
+        // }
     }
 
+    #region Player Spawn Management
     private void SpawnAllPlayers()
     {
         foreach (var player in Runner.ActivePlayers)
@@ -55,35 +58,98 @@ public class GameController : NetworkBehaviour
             playerRef
         );
 
-        _spawnedPlayers[playerRef] = playerObj;
+        _spawnedPlayers.Add(playerRef, playerObj);
     }
 
     // Called when player dies
+    // [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    // public void RPC_RequestRespawn(PlayerRef playerRef)
+    // {
+    //     if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
+    //     {
+    //         var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
+    //         _respawnTimers.Set(playerRef, newTimer);
+    //         StartCoroutine(RespawnPlayerAfterDelay(playerRef));
+    //     }
+    // }
+
+    // private IEnumerator RespawnPlayerAfterDelay(PlayerRef playerRef)
+    // {
+    //     while (_respawnTimers.TryGet(playerRef, out var timer) && !timer.Expired(Runner))
+    //         yield return null;
+
+    //     if (_spawnedPlayers.ContainsKey(playerRef))
+    //     {
+    //         Runner.Despawn(_spawnedPlayers[playerRef]);
+    //         _spawnedPlayers.Remove(playerRef);
+    //     }
+    //     SpawnPlayer(playerRef);
+    //     _respawnTimers.Remove(playerRef);
+    // }
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RequestRespawn(PlayerRef playerRef)
+    public void RPC_PlayerDied(PlayerRef playerRef)
     {
-        if (_respawnTimer.ExpiredOrNotRunning(Runner))
+        if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
         {
-            _respawnTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
-            StartCoroutine(RespawnPlayerAfterDelay(playerRef));
+            var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
+            _respawnTimers.Set(playerRef, newTimer);
         }
     }
 
-    private IEnumerator RespawnPlayerAfterDelay(PlayerRef playerRef)
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_RequestRespawn(PlayerRef playerRef)
     {
-        while (!_respawnTimer.Expired(Runner))
-            yield return null;
-
-        if (_spawnedPlayers.ContainsKey(playerRef))
+        if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.Expired(Runner))
         {
-            Runner.Despawn(_spawnedPlayers[playerRef]);
-            _spawnedPlayers.Remove(playerRef);
+            if (_spawnedPlayers.ContainsKey(playerRef))
+            {
+                Runner.Despawn(_spawnedPlayers[playerRef]);
+                _spawnedPlayers.Remove(playerRef);
+            }
+            SpawnPlayer(playerRef);
+            _respawnTimers.Remove(playerRef);
         }
-        SpawnPlayer(playerRef);
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         _spawnedPlayers.Clear();
     }
+
+    public void OnPlayerDied(PlayerRef playerRef)
+    {
+        if (_spawnedPlayers.TryGetValue(playerRef, out NetworkObject playerObj))
+        {
+            StartCoroutine(DespawnPlayerAfterDelay(playerRef, playerObj, 3f));
+        }
+    }
+
+    private IEnumerator DespawnPlayerAfterDelay(PlayerRef playerRef, NetworkObject playerObj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        Runner.Despawn(playerObj);
+        _spawnedPlayers.Remove(playerRef);
+    }
+
+    public bool CanLocalPlayerRespawn()
+    {
+        var playerRef = Runner.LocalPlayer;
+        if (_respawnTimers.TryGet(playerRef, out var timer))
+        {
+            return timer.Expired(Runner);
+        }
+        // If no timer exists, allow respawn (first spawn)
+        return true;
+    }
+
+    public TickTimer GetRespawnTimer(PlayerRef playerRef)
+    {
+        if (_respawnTimers.TryGet(playerRef, out var timer))
+        {
+            return timer;
+        }
+        return TickTimer.None;
+    }
+    #endregion
 }
