@@ -21,7 +21,7 @@
         "SimulationUpdateTimeMode": 0,
         "PlayerCount": 10,
         "TickRateSelection": {
-            "Client": 64,
+            "Client": 60,
             "ServerIndex": 0,
             "ClientSendIndex": 1,
             "ServerSendIndex": 1
@@ -34,7 +34,7 @@
         "ReliableDataTransferModes": 3
     },
     "HostMigration": {
-        "EnableAutoUpdate": false,
+        "EnableAutoUpdate": true,
         "UpdateDelay": 10
     },
     "EncryptionConfig": {
@@ -57,7 +57,7 @@
     },
     "Heap": {
         "PageShift": 16,
-        "PageCount": 512,
+        "PageCount": 1024,
         "GlobalsSize": 0
     },
     "AssembliesToWeave": [

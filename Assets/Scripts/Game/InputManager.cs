@@ -10,7 +10,12 @@ public class InputManager : SimulationBehaviour, IBeforeUpdate, INetworkRunnerCa
 {
     private NetInput accumulatedInput;
     private bool isInputDisabled;
+    private Player _localPlayer;
 
+    public void SetLocalPlayer(Player player)
+    {
+        _localPlayer = player;
+    }
 
     void IBeforeUpdate.BeforeUpdate()
     {
@@ -21,23 +26,33 @@ public class InputManager : SimulationBehaviour, IBeforeUpdate, INetworkRunnerCa
             return;
         }
 
+        if (!Runner.IsRunning || _localPlayer == null)
+        {
+            accumulatedInput = default;
+            return; // Ensure we only process input when the runner is running and local player is set
+        }
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
+            mousePos.y >= 0 && mousePos.y <= Screen.height)
+        {
+            // // Get mouse position and convert to world direction
+            // Vector3 mouseScreenPos = Mouse.current.position.ReadValue();
+            // mouseScreenPos.z = Mathf.Abs(Camera.main.transform.position.y - _localPlayer.transform.position.y);
+            Vector3 mouseScreenPos = new Vector3(mousePos.x, mousePos.y, Mathf.Abs(Camera.main.transform.position.y - _localPlayer.transform.position.y));
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
+            Vector3 lookDirection = (mouseWorldPos - _localPlayer.transform.position);
+
+            // Store normalized XZ direction in input
+            accumulatedInput.LookDirection = new Vector2(lookDirection.x, lookDirection.z);
+        }
+        else
+        {
+            // Optionally, zero out look direction if mouse is outside
+            accumulatedInput.LookDirection = Vector2.zero;
+        }
 
         Keyboard keyboard = Keyboard.current;
-        // if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))
-        // {
-        //     if (Cursor.lockState == CursorLockMode.Locked)
-        //     {
-        //         Cursor.lockState = CursorLockMode.None;
-        //         Cursor.visible = true;
-        //         Debug.Log("Cursor unlocked and visible");
-        //     }
-        //     else
-        //     {
-        //         Cursor.lockState = CursorLockMode.Locked;
-        //         Cursor.visible = false;
-        //     }
-        // }
-
         Mouse mouse = Mouse.current;
         if (mouse != null)
         {
@@ -65,6 +80,7 @@ public class InputManager : SimulationBehaviour, IBeforeUpdate, INetworkRunnerCa
             buttons.Set(InputButton.LeftClick, mouse.leftButton.isPressed);
             buttons.Set(InputButton.RightClick, mouse.rightButton.isPressed);
             buttons.Set(InputButton.Escape, keyboard.escapeKey.isPressed);
+            buttons.Set(InputButton.Reload, keyboard.rKey.isPressed);
         }
 
         // accumulatedInput.Buttons = new NetworkButtons(accumulatedInput.Buttons.Bits | buttons.Bits);
