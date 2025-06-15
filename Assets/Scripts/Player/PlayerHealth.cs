@@ -23,10 +23,10 @@ public class PlayerHealth : NetworkHealth
         // 1. Handle kill notification
         // _playerKilledEvent.Raise(new PlayerKillInfo(killer, Object.InputAuthority));
         // Debug.Log($"Player {Object.InputAuthority} killed by {killer}");
-        LastKillInfo = new PlayerKillInfo(killer, Object.InputAuthority);
 
         if (Object.HasStateAuthority)
         {
+            LastKillInfo = new PlayerKillInfo(killer, Object.InputAuthority);
             GameController.Instance.PlayerDied(Object.InputAuthority);
         }
 

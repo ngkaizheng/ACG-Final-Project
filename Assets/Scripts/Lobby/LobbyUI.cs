@@ -70,7 +70,7 @@ public class LobbyUI : MonoBehaviour
             listItem.transform.SetSiblingIndex(displayIndex);
 
             bool isLocalPlayer = player.PlayerRef == Runner.LocalPlayer;
-            bool isHost = Runner != null && Runner.IsServer;
+            bool isHost = Runner != null && (Runner.IsServer || Runner.IsSharedModeMasterClient);
 
             // Always update the display ID and name to keep them in sync
             listItem.Initialize(

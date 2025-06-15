@@ -12,7 +12,7 @@ public class NetworkCallbacks : SimulationBehaviour, INetworkRunnerCallbacks
 
     void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
     {
-        Debug.Log($"Connected to server as {(runner.IsServer ? "Host" : "Client")}");
+        Debug.Log($"Connected to server as {((Runner.IsServer || Runner.IsSharedModeMasterClient) ? "Host" : "Client")}");
     }
 
     void INetworkRunnerCallbacks.OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
@@ -64,6 +64,17 @@ public class NetworkCallbacks : SimulationBehaviour, INetworkRunnerCallbacks
     void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
         Debug.Log($"Player {player} joined the session");
+        if (GameConfig.isSharedMode && player == Runner.LocalPlayer)
+        {
+            StartCoroutine(WaitAndSpawnPlayerData(player));
+        }
+    }
+    private IEnumerator WaitAndSpawnPlayerData(PlayerRef player)
+    {
+        while (LobbyManager.Instance == null || !LobbyManager.Instance._isInitialized || LobbyUI.Instance == null)
+            yield return null;
+
+        LobbyManager.Instance.SpawnPlayerData(player);
     }
 
     void INetworkRunnerCallbacks.OnPlayerLeft(NetworkRunner runner, PlayerRef player)

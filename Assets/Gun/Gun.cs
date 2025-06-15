@@ -90,8 +90,16 @@ public class Gun : NetworkBehaviour
             if (Object.HasStateAuthority)
             {
                 Debug.Log($"Hit: {hit.collider.name}");
-                var damageable = hit.collider.GetComponentInParent<IDamageable>();
-                damageable?.TakeDamage(DamagePerShot, Object.InputAuthority);
+                if (GameConfig.isSharedMode)
+                {
+                    var NetworkHealth = hit.collider.GetComponentInParent<NetworkHealth>();
+                    NetworkHealth?.RPC_TakeDamage(DamagePerShot, Object.InputAuthority);
+                }
+                else
+                {
+                    var damageable = hit.collider.GetComponentInParent<IDamageable>();
+                    damageable?.TakeDamage(DamagePerShot, Object.InputAuthority);
+                }
             }
 
             info.MadeImpact = true;

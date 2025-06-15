@@ -18,14 +18,14 @@ public class LobbyLogic : MonoBehaviour
 
         var result = await _runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.Host,
+            GameMode = GameMode.Shared,
             SessionName = roomId,
             PlayerCount = _maxPlayers,
             SceneManager = _runner.GetComponent<INetworkSceneManager>() ??
                       _runner.gameObject.AddComponent<NetworkSceneManagerDefault>()
         });
 
-        if (result.Ok && _runner.IsServer)
+        if (result.Ok && (_runner.IsServer || _runner.IsSharedModeMasterClient))
         {
             SpawnLobbyManager();
         }
@@ -38,7 +38,7 @@ public class LobbyLogic : MonoBehaviour
         _runner = Instantiate(_networkRunnerPrefab);
         return await _runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.Client,
+            GameMode = GameMode.Shared,
             SessionName = roomId
         });
     }
@@ -51,7 +51,7 @@ public class LobbyLogic : MonoBehaviour
             MatchmakingMode = MatchmakingMode.FillRoom
         });
 
-        if (result.Ok && _runner.IsServer)
+        if (result.Ok && (_runner.IsServer || _runner.IsSharedModeMasterClient))
         {
             SpawnLobbyManager();
         }
@@ -79,7 +79,7 @@ public class LobbyLogic : MonoBehaviour
 
     private void SpawnLobbyManager()
     {
-        if (_runner.IsServer && _lobbyManagerPrefab != null)
+        if ((_runner.IsServer || _runner.IsSharedModeMasterClient) && _lobbyManagerPrefab != null)
         {
             _runner.Spawn(_lobbyManagerPrefab, Vector3.zero, Quaternion.identity);
         }

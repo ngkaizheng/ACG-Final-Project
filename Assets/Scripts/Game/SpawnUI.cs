@@ -67,7 +67,15 @@ public class SpawnUI : MonoBehaviour
 
     public void OnSpawnButtonClicked()
     {
-        GameController.Instance.RPC_RequestRespawn(GameController.Instance.Runner.LocalPlayer);
+        if (GameConfig.isSharedMode)
+        {
+            GameController.Instance.RPC_RequestRespawnShared(GameController.Instance.Runner.LocalPlayer);
+            GameController.Instance.SpawnPlayer(GameController.Instance.Runner.LocalPlayer);
+        }
+        else
+        {
+            GameController.Instance.RPC_RequestRespawn(GameController.Instance.Runner.LocalPlayer);
+        }
         HideSpawnPanel();
     }
 }

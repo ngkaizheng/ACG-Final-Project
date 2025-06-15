@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using ExitGames.Client.Photon.StructWrapping;
 
 public class GameController : NetworkBehaviour
 {
@@ -51,7 +52,7 @@ public class GameController : NetworkBehaviour
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPC_ShowEndGame()
     {
-        EndGameUI.Instance.Show(isHost: Runner.IsServer);
+        EndGameUI.Instance.Show(isHost: Runner.IsServer || Runner.IsSharedModeMasterClient);
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -62,7 +63,7 @@ public class GameController : NetworkBehaviour
     private IEnumerator EndGameRoutine()
     {
         // All clients (including host) disconnect and load main menu
-        if (!Runner.IsServer)
+        if (!(Runner.IsServer || Runner.IsSharedModeMasterClient))
         {
             // Client: disconnect and load menu
             Runner.Shutdown();
@@ -90,7 +91,8 @@ public class GameController : NetworkBehaviour
 
     public void SpawnPlayer(PlayerRef playerRef)
     {
-        if (!Runner.IsServer) return;
+        if (!GameConfig.isSharedMode)
+            if (!(Runner.IsServer || Runner.IsSharedModeMasterClient)) return;
 
         // Get spawn position (round-robin through spawn points)
         var spawnPoint = _spawnPoints[playerRef.PlayerId % _spawnPoints.Length];
@@ -103,21 +105,56 @@ public class GameController : NetworkBehaviour
             playerRef
         );
 
+        if (Runner.GetPlayerObject(playerRef) != null)
+        {
+            // If player object already exists, despawn it
+            Runner.Despawn(Runner.GetPlayerObject(playerRef));
+        }
+
         //Set PlayerObject
         Runner.SetPlayerObject(playerRef, playerObj);
 
-        _spawnedPlayers.Add(playerRef, playerObj);
+        if (GameConfig.isSharedMode)
+        {
+            RPC_RequestRespawnSharedAdd(playerRef);
+        }
+        else
+        {
+            _spawnedPlayers.Add(playerRef, playerObj);
+        }
+    }
+
+    #region Shared Mode Player Management
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_RequestRespawnShared(PlayerRef playerRef)
+    {
+        if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.Expired(Runner))
+        {
+            if (_spawnedPlayers.ContainsKey(playerRef))
+            {
+                Runner.Despawn(_spawnedPlayers[playerRef]);
+                _spawnedPlayers.Remove(playerRef);
+            }
+            _respawnTimers.Remove(playerRef);
+        }
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_PlayerDied(PlayerRef playerRef)
+    public void RPC_RequestRespawnSharedAdd(PlayerRef playerRef)
     {
-        if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
-        {
-            var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
-            _respawnTimers.Set(playerRef, newTimer);
-        }
+        _spawnedPlayers.Add(playerRef, Runner.GetPlayerObject(playerRef));
     }
+    #endregion
+
+    // [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    // public void RPC_PlayerDied(PlayerRef playerRef)
+    // {
+    //     if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
+    //     {
+    //         var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
+    //         _respawnTimers.Set(playerRef, newTimer);
+    //     }
+    // }
 
     public void PlayerDied(PlayerRef playerRef)
     {

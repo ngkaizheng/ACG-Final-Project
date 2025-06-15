@@ -16,11 +16,11 @@ public class LobbyPlayerData : NetworkBehaviour
     {
         PlayerRef = Object.InputAuthority;
 
-        if (Runner.IsServer)
+        if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
             // Initialize with default values
             Nickname = "...";
-            if (Runner.IsServer && Runner.LocalPlayer == PlayerRef)
+            if ((Runner.IsServer || Runner.IsSharedModeMasterClient) && Runner.LocalPlayer == PlayerRef)
                 IsReady = true;
             else
                 IsReady = false;
@@ -50,7 +50,7 @@ public class LobbyPlayerData : NetworkBehaviour
 
     public void RPC_KickPlayer()
     {
-        if (Runner.IsServer)
+        if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
             Runner.Disconnect(PlayerRef); // Force disconnect
             // Runner.Despawn(Object); // Remove player object

@@ -14,7 +14,7 @@ public class InGamePlayerData : NetworkBehaviour
     {
         PlayerRef = Object.InputAuthority;
 
-        if (Runner.IsServer)
+        if (Runner.IsServer || GameConfig.isSharedMode)
         {
             if (string.IsNullOrEmpty(Nickname.Value))
             {
@@ -54,21 +54,21 @@ public class InGamePlayerData : NetworkBehaviour
         LeaderboardUI.Instance.UpdateLeaderboard();
     }
 
-    // [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    // public void RPC_AddKill()
-    // {
-    //     Kills++;
-    //     // Optionally, you can also update the UI or notify other players
-    //     // For example, you could call a method to update the scoreboard
-    //     // UpdateScoreboard();
-    // }
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_AddKill()
+    {
+        Kills++;
+        // Optionally, you can also update the UI or notify other players
+        // For example, you could call a method to update the scoreboard
+        // UpdateScoreboard();
+    }
 
-    // [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    // public void RPC_AddDeath()
-    // {
-    //     Deaths++;
-    //     // Optionally, you can also update the UI or notify other players
-    //     // For example, you could call a method to update the scoreboard
-    //     // UpdateScoreboard();
-    // }
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_AddDeath()
+    {
+        Deaths++;
+        // Optionally, you can also update the UI or notify other players
+        // For example, you could call a method to update the scoreboard
+        // UpdateScoreboard();
+    }
 }

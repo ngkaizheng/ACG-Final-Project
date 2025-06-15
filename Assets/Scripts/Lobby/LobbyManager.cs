@@ -36,18 +36,46 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         _isInitialized = true;
     }
 
-    private void SpawnPlayerData(PlayerRef player)
+    public void SpawnPlayerData(PlayerRef player)
     {
         var playerObj = Runner.Spawn(_lobbyPlayerPrefab, position: Vector3.zero, inputAuthority: player);
         // playerObj.transform.SetParent(transform, false);
         playerObj.name = "LobbyPlayer_" + player.ToString();
 
-        Players.Add(playerObj.GetComponent<LobbyPlayerData>());
+        if (GameConfig.isSharedMode)
+        {
+            RPC_RequestAddPlayer(playerObj.GetComponent<LobbyPlayerData>());
+        }
+        else
+            Players.Add(playerObj.GetComponent<LobbyPlayerData>());
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_RequestAddPlayer(LobbyPlayerData lobbyPlayerData)
+    {
+        if (!Players.Contains(lobbyPlayerData))
+        {
+            Players.Add(lobbyPlayerData);
+            Debug.Log($"Player {lobbyPlayerData.PlayerRef} added to lobby. Total players: {Players.Count}");
+        }
+        else
+        {
+            Debug.LogWarning($"Player {lobbyPlayerData.PlayerRef} is already in the lobby.");
+        }
     }
 
     public void PlayerJoined(PlayerRef player)
     {
-        if (Runner.IsServer)
+        if (GameConfig.isSharedMode)
+        {
+            // Debug.Log($"Player {player} joined the lobby. Total players: {Players.Count}");
+            // if (player == Runner.LocalPlayer)
+            // {
+            //     SpawnPlayerData(player);
+            //     Debug.Log($"Local player {player} spawned in lobby.");
+            // }
+        }
+        else if (Runner.IsServer)
         {
             SpawnPlayerData(player);
             Debug.Log($"Player {player} joined the lobby. Total players: {Players.Count}");
@@ -56,7 +84,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     public void PlayerLeft(PlayerRef player)
     {
-        if (Runner.IsServer)
+        if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
             LobbyPlayerData playerData = null;
             foreach (var p in Players)
@@ -77,7 +105,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     public void StartGame()
     {
-        if (Runner.IsServer && Players.Count > 0)
+        if ((Runner.IsServer || Runner.IsSharedModeMasterClient) && Players.Count > 0)
         {
             Runner.SessionInfo.IsOpen = false; // Lock the session
             Debug.Log("Starting game with " + Players.Count + " players.");
@@ -88,7 +116,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     public void OnStartGameOrReadyClicked()
     {
-        if (Runner.IsServer)
+        if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
             if (!CheckAllPlayersReady())
             {
@@ -106,7 +134,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     public bool CheckAllPlayersReady()
     {
-        if (!Runner.IsServer) return false;
+        if (!(Runner.IsServer || Runner.IsSharedModeMasterClient)) return false;
 
         foreach (var player in FindObjectsOfType<LobbyPlayerData>())
         {
@@ -138,6 +166,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     private void OnPlayersChanged()
     {
+        Debug.Log("Player list changed. Total players: " + Players.Count);
         _onPlayerListChanged.Raise(Players);
     }
 }

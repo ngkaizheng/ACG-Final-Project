@@ -14,6 +14,8 @@ public static class GameConfig
     // UI settings
     public const string MainMenuSceneName = "MainMenu";
     public const string GameSceneName = "Game";
+
+    public const bool isSharedMode = true;
 }
 
 public static class UISettings

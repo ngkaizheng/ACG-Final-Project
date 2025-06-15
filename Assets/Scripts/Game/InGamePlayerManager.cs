@@ -15,7 +15,7 @@ public class InGamePlayerManager : NetworkBehaviour
     [SerializeField] private PlayerKillEvent playerKilledEvent;
 
 
-    [Networked, Capacity(8)]
+    [Networked, Capacity(8), OnChangedRender(nameof(OnPlayerDataChanged))]
     public NetworkDictionary<PlayerRef, InGamePlayerData> playerDataDict { get; }
 
     private void Awake()
@@ -38,11 +38,14 @@ public class InGamePlayerManager : NetworkBehaviour
         Instance = this;
 
         // Server-only initialization
-        if (Runner.IsServer)
+        if (GameConfig.isSharedMode)
+        {
+            SpawnPlayerData(Runner.LocalPlayer);
+        }
+        else if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
             InitializeAllPlayerData();
         }
-        LeaderboardUI.Instance.UpdateLeaderboard();
     }
     private void InitializeAllPlayerData()
     {
@@ -53,18 +56,29 @@ public class InGamePlayerManager : NetworkBehaviour
     }
     private void OnPlayerKilled(PlayerKillInfo info)
     {
+        // Only allow State Authority(server/ master client in Host / Client, master client in Shared) to update stats
+        if (GameConfig.isSharedMode)
+        {
+            if (!Runner.IsSharedModeMasterClient) return;
+        }
+        else
+        {
+            if (!(Runner.IsServer || Runner.IsSharedModeMasterClient)) return;
+        }
         Debug.Log($"Player {info.Killer} killed {info.Victim}");
         // Find killer and victim InGamePlayerData
         var killerData = GetPlayerData(info.Killer);
         var victimData = GetPlayerData(info.Victim);
 
+        Debug.Log($"Killer Data: {killerData}, Victim Data: {victimData}");
+
         if (killerData != null)
-            killerData.Kills++;
+            killerData.RPC_AddKill();
 
         if (victimData != null)
-            victimData.Deaths++;
+            victimData.RPC_AddDeath();
 
-        LeaderboardUI.Instance.UpdateLeaderboard();
+        Debug.Log($"Updated Kills: {killerData?.Kills}, Deaths: {victimData?.Deaths}");
     }
 
     private void SpawnPlayerData(PlayerRef playerRef)
@@ -75,9 +89,27 @@ public class InGamePlayerManager : NetworkBehaviour
             onBeforeSpawned: (runner, obj) =>
             {
                 var data = obj.GetComponent<InGamePlayerData>();
-                playerDataDict.Set(playerRef, data);
+                if (GameConfig.isSharedMode)
+                    RPC_SetPlayerData(playerRef, data);
+                else
+                    playerDataDict.Set(playerRef, data);
             }
         );
+    }
+
+    private void OnPlayerDataChanged()
+    {
+        LeaderboardUI.Instance.UpdateLeaderboard();
+    }
+
+    //Shared Mode RPC to set player data
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_SetPlayerData(PlayerRef playerRef, InGamePlayerData playerData)
+    {
+        if (!playerDataDict.ContainsKey(playerRef))
+        {
+            playerDataDict.Set(playerRef, playerData);
+        }
     }
 
     public InGamePlayerData GetPlayerData(PlayerRef playerRef)

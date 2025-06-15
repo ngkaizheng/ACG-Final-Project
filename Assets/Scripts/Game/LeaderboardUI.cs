@@ -24,7 +24,7 @@ public class LeaderboardUI : MonoBehaviour
 
     private void Start()
     {
-        UpdateLeaderboard();
+        // UpdateLeaderboard();
     }
 
     public void UpdateLeaderboard()

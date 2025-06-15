@@ -27,6 +27,13 @@ public abstract class NetworkHealth : NetworkBehaviour, IDamageable
         }
     }
 
+    //Since using shared mode, need use rpc to take damage
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_TakeDamage(int damage, PlayerRef attacker)
+    {
+        TakeDamage(damage, attacker);
+    }
+
     public virtual void Heal(int amount)
     {
         CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
