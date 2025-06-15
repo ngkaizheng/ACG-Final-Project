@@ -13,6 +13,10 @@ public class SpawnUI : MonoBehaviour
     [SerializeField] private Button _spawnButton;
     [SerializeField] private TMP_Text _spawnTimerText;
 
+    [Header("Event Listening")]
+    [SerializeField] private PlayerKillEvent _playerKilledEvent;
+    [SerializeField] private PlayerEvent _playerRespawnedEvent;
+
     private void Awake()
     {
         if (Instance == null)

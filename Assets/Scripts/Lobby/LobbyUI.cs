@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Fusion;
+using TMPro;
 using UnityEngine;
 
 public class LobbyUI : MonoBehaviour
@@ -8,6 +9,7 @@ public class LobbyUI : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Transform _playerListContainer;
     [SerializeField] private GameObject _playerListItemPrefab;
+    [SerializeField] private TMP_Text _sessionNameText;
 
     [Header("Event Listening")]
     [SerializeField] private LobbyPlayerListDataEvent _playerListChangedEvent;
@@ -15,6 +17,19 @@ public class LobbyUI : MonoBehaviour
 
     private NetworkRunner Runner => LobbyManager.Instance.Runner;
     private readonly Dictionary<PlayerRef, PlayerListItem> _playerListItems = new();
+
+    public static LobbyUI Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void OnEnable()
     {
@@ -74,5 +89,10 @@ public class LobbyUI : MonoBehaviour
             bool isLocalPlayer = Runner != null && playerData.PlayerRef == Runner.LocalPlayer;
             listItem.UpdatePlayerItem(playerData.Nickname.ToString(), playerData.IsReady, isLocalPlayer);
         }
+    }
+
+    public void UpdateSessionName(string sessionName)
+    {
+        _sessionNameText.text = $"Room ID: {sessionName}";
     }
 }

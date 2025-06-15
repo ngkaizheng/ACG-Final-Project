@@ -13,6 +13,9 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     [SerializeField] private NetworkObject _lobbyPlayerPrefab;
     [SerializeField] private LobbyPlayerListDataEvent _onPlayerListChanged;
 
+    [Networked] public string _currentSessionName { get; set; }
+    public bool _isInitialized = false;
+
 
     private void Awake()
     {
@@ -29,6 +32,8 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     public override void Spawned()
     {
         OnPlayersChanged();
+        _currentSessionName = Runner.SessionInfo.Name;
+        _isInitialized = true;
     }
 
     private void SpawnPlayerData(PlayerRef player)

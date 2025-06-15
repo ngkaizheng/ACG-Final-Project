@@ -5,7 +5,8 @@ public abstract class NetworkHealth : NetworkBehaviour, IDamageable
 {
     [Networked] public int CurrentHealth { get; protected set; }
     [Networked] public int MaxHealth { get; protected set; } = 100;
-    [Networked] public NetworkBool IsAlive { get; protected set; }
+
+    [Networked, OnChangedRender(nameof(OnAliveStateChanged))] public NetworkBool IsAlive { get; protected set; }
 
     public override void Spawned()
     {
@@ -32,4 +33,6 @@ public abstract class NetworkHealth : NetworkBehaviour, IDamageable
     }
 
     protected abstract void OnDeath(PlayerRef killer);
+
+    public abstract void OnAliveStateChanged();
 }

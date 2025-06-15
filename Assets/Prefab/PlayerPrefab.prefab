@@ -137,6 +137,8 @@ MonoBehaviour:
     m_Bits: 1
   BounceDistance: 10
   DamagePerShot: 10
+  MaxDistance: 75
+  lastShootTick: 0
 --- !u!1 &2952089704861911874
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,6 +401,7 @@ GameObject:
   - component: {fileID: 3170012487458590379}
   - component: {fileID: 4284587754461609438}
   - component: {fileID: 3032601993700034023}
+  - component: {fileID: 3447014965779163609}
   m_Layer: 0
   m_Name: PlayerPrefab
   m_TagString: Untagged
@@ -551,6 +554,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetRenderer: {fileID: 7527432334447974803}
+--- !u!95 &3447014965779163609
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4584410631944328888}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 37a85bee383eb534d8915a5186d2a03a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &5455817016872099831
 GameObject:
   m_ObjectHideFlags: 0

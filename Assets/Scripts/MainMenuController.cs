@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -77,6 +78,23 @@ public class MainMenuController : MonoBehaviour
         multiplayerLayout.SetActive(state == MenuState.Multiplayer);
         lobbyLayout.SetActive(state == MenuState.Lobby);
         settingsLayout.SetActive(state == MenuState.Settings);
+
+        if (state == MenuState.Lobby)
+        {
+            StartCoroutine(WaitForLobbyManagerInitialized());
+        }
+    }
+
+    private IEnumerator WaitForLobbyManagerInitialized()
+    {
+        while (LobbyManager.Instance != null && !LobbyManager.Instance._isInitialized)
+        {
+            yield return null;
+        }
+        if (LobbyManager.Instance != null && LobbyUI.Instance != null)
+        {
+            LobbyUI.Instance.UpdateSessionName(LobbyManager.Instance._currentSessionName);
+        }
     }
 
     private async void ExitNetworkAndShowMainMenu()
@@ -98,7 +116,7 @@ public class MainMenuController : MonoBehaviour
     private async void CreateRoom()
     {
         //Random a room ID
-        string roomId = $"Room{Random.Range(1000, 9999)}";
+        string roomId = $"{Random.Range(000000, 999999)}";
         var result = await lobbyLogic.CreateRoom(roomId);
         if (result.Ok)
         {

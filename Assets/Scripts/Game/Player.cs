@@ -6,8 +6,9 @@ public class Player : NetworkBehaviour
 {
     [Header("Player Settings")]
     [SerializeField] private float _rotationSpeed = 10f;
+    [SerializeField] private float _moveSpeed = 10f;
 
-    [Networked] public NetworkHealth Health { get; private set; }
+    [Networked] public PlayerHealth Health { get; private set; }
 
     private NetworkCharacterController _cc;
     private CharacterController _characterController;
@@ -28,7 +29,7 @@ public class Player : NetworkBehaviour
 
     public override void Spawned()
     {
-        Health = GetComponent<NetworkHealth>();
+        Health = GetComponent<PlayerHealth>();
 
         if (Object.InputAuthority == Runner.LocalPlayer)
         {
@@ -51,7 +52,8 @@ public class Player : NetworkBehaviour
     {
         if (GetInput(out NetInput input))
         {
-            Debug.Log($"Player {Object.InputAuthority} input received: Direction={input.Direction}, LookDelta={input.LookDelta}, Buttons={input.Buttons}");
+            if (!isAlive()) return;
+
             UpdateMoveDirection(input);
             UpdateRotation(input);
             // if (data.Buttons.IsSet(InputButton.Jump))
@@ -65,7 +67,7 @@ public class Player : NetworkBehaviour
     {
         Vector2 move2D = input.Direction.normalized;
         Vector3 move = new Vector3(move2D.x, 0, move2D.y); // XZ plane
-        _cc.Move(5 * move * Runner.DeltaTime);
+        _cc.Move(_moveSpeed * move * Runner.DeltaTime);
         // Vector3 move = new Vector3(input.Direction.x, 0, input.Direction.y).normalized * Runner.DeltaTime * 5f;
         // transform.position += move;
     }
@@ -119,6 +121,12 @@ public class Player : NetworkBehaviour
     {
         Debug.Log("Right Click Action Triggered");
         // Implement right click action logic here
+        // Deduct 10 HP from the player
+        if (Health != null && Health.IsAlive)
+        {
+            Health.TakeDamage(10, Object.InputAuthority);
+        }
+
     }
     public void Reload()
     {
@@ -134,4 +142,9 @@ public class Player : NetworkBehaviour
         // Handle player death logic here, such as respawning or updating UI
     }
     #endregion
+
+    public bool isAlive()
+    {
+        return Health != null && Health.IsAlive;
+    }
 }

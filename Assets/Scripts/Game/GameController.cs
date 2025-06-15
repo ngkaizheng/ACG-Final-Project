@@ -58,6 +58,9 @@ public class GameController : NetworkBehaviour
             playerRef
         );
 
+        //Set PlayerObject
+        Runner.SetPlayerObject(playerRef, playerObj);
+
         _spawnedPlayers.Add(playerRef, playerObj);
     }
 
@@ -88,6 +91,15 @@ public class GameController : NetworkBehaviour
     // }
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PlayerDied(PlayerRef playerRef)
+    {
+        if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
+        {
+            var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
+            _respawnTimers.Set(playerRef, newTimer);
+        }
+    }
+
+    public void PlayerDied(PlayerRef playerRef)
     {
         if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
         {
