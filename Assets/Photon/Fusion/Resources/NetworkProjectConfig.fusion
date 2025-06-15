@@ -3,7 +3,7 @@
     "TypeId": "NetworkProjectConfig",
     "PeerMode": 0,
     "LagCompensation": {
-        "Enabled": true,
+        "Enabled": false,
         "HitboxBufferLengthInMs": 200,
         "HitboxDefaultCapacity": 512,
         "CachedStaticCollidersSize": 64
@@ -12,7 +12,7 @@
     "InvokeRenderInBatchMode": true,
     "NetworkIdIsObjectName": false,
     "HideNetworkObjectInactivityGuard": false,
-    "AllowClientServerModesInWebGL": false,
+    "AllowClientServerModesInWebGL": true,
     "ClientsRecordFrameAndPacketTimingTraces": false,
     "Simulation": {
         "InputDataWordCount": 0,
@@ -21,7 +21,7 @@
         "SimulationUpdateTimeMode": 0,
         "PlayerCount": 10,
         "TickRateSelection": {
-            "Client": 60,
+            "Client": 24,
             "ServerIndex": 0,
             "ClientSendIndex": 1,
             "ServerSendIndex": 1
@@ -57,7 +57,7 @@
     },
     "Heap": {
         "PageShift": 16,
-        "PageCount": 1024,
+        "PageCount": 512,
         "GlobalsSize": 0
     },
     "AssembliesToWeave": [

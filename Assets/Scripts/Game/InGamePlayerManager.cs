@@ -11,8 +11,22 @@ public class InGamePlayerManager : NetworkBehaviour
     [Header("Config")]
     [SerializeField] private NetworkObject _playerDataPrefab;
 
+    [Header("Event")]
+    [SerializeField] private PlayerKillEvent playerKilledEvent;
+
+
     [Networked, Capacity(8)]
-    private NetworkDictionary<PlayerRef, InGamePlayerData> _playerDataDict { get; }
+    public NetworkDictionary<PlayerRef, InGamePlayerData> playerDataDict { get; }
+
+    private void Awake()
+    {
+        playerKilledEvent.OnRaised.AddListener(OnPlayerKilled);
+    }
+
+    private void OnDestroy()
+    {
+        playerKilledEvent.OnRaised.RemoveListener(OnPlayerKilled);
+    }
 
     public override void Spawned()
     {
@@ -28,6 +42,7 @@ public class InGamePlayerManager : NetworkBehaviour
         {
             InitializeAllPlayerData();
         }
+        LeaderboardUI.Instance.UpdateLeaderboard();
     }
     private void InitializeAllPlayerData()
     {
@@ -36,6 +51,22 @@ public class InGamePlayerManager : NetworkBehaviour
             SpawnPlayerData(player);
         }
     }
+    private void OnPlayerKilled(PlayerKillInfo info)
+    {
+        Debug.Log($"Player {info.Killer} killed {info.Victim}");
+        // Find killer and victim InGamePlayerData
+        var killerData = GetPlayerData(info.Killer);
+        var victimData = GetPlayerData(info.Victim);
+
+        if (killerData != null)
+            killerData.Kills++;
+
+        if (victimData != null)
+            victimData.Deaths++;
+
+        LeaderboardUI.Instance.UpdateLeaderboard();
+    }
+
     private void SpawnPlayerData(PlayerRef playerRef)
     {
         Runner.Spawn(
@@ -44,16 +75,13 @@ public class InGamePlayerManager : NetworkBehaviour
             onBeforeSpawned: (runner, obj) =>
             {
                 var data = obj.GetComponent<InGamePlayerData>();
-                _playerDataDict.Set(playerRef, data);
+                playerDataDict.Set(playerRef, data);
             }
         );
     }
-    // public List<LobbyPlayerData> GetAllPlayers()
-    // {
-    //     return FindObjectsOfType<LobbyPlayerData>().ToList();
-    // }
+
     public InGamePlayerData GetPlayerData(PlayerRef playerRef)
-    => _playerDataDict.TryGet(playerRef, out var data) ? data : null;
+    => playerDataDict.TryGet(playerRef, out var data) ? data : null;
 
 #if UNITY_EDITOR
     [Header("Debug")]
@@ -65,7 +93,7 @@ public class InGamePlayerManager : NetworkBehaviour
         if (Object == null || !Object.IsValid) return;
         // Only update in Editor and in Play mode
         if (!Application.isPlaying) return;
-        _debugPlayerDataList = _playerDataDict.Select(kv => kv.Value).ToList();
+        _debugPlayerDataList = playerDataDict.Select(kv => kv.Value).ToList();
     }
 #endif
 }

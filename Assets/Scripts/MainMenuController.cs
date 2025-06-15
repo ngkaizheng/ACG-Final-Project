@@ -74,6 +74,8 @@ public class MainMenuController : MonoBehaviour
 
     public void ShowSection(MenuState state)
     {
+        if (Instance == null) return;
+
         mainMenuLayout.SetActive(state == MenuState.MainMenu);
         multiplayerLayout.SetActive(state == MenuState.Multiplayer);
         lobbyLayout.SetActive(state == MenuState.Lobby);
@@ -163,13 +165,14 @@ public class MainMenuController : MonoBehaviour
 
     public async void HandleLeftRoom(bool isKicked = false)
     {
-        await lobbyLogic.LeaveRoom();
+        await lobbyLogic?.LeaveRoom();
         ShowSection(MenuState.MainMenu);
         // Optional: Show kick notification
     }
 
     private void StartGameOrReadyInLobby()
     {
+        Debug.Log("StartGameOrReadyInLobby called");
         if (LobbyManager.Instance != null)
         {
             LobbyManager.Instance.OnStartGameOrReadyClicked();

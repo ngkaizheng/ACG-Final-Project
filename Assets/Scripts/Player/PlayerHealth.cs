@@ -15,11 +15,15 @@ public class PlayerHealth : NetworkHealth
     [SerializeField] private PlayerKillEvent _playerKilledEvent;
     [SerializeField] private PlayerEvent _playerRespawnedEvent;
 
+    [Networked, OnChangedRender(nameof(OnKillInfoChanged))]
+    private PlayerKillInfo LastKillInfo { get; set; }
+
     protected override void OnDeath(PlayerRef killer)
     {
         // 1. Handle kill notification
-        _playerKilledEvent.Raise(new PlayerKillInfo(killer, Object.InputAuthority));
-        Debug.Log($"Player {Object.InputAuthority} killed by {killer}");
+        // _playerKilledEvent.Raise(new PlayerKillInfo(killer, Object.InputAuthority));
+        // Debug.Log($"Player {Object.InputAuthority} killed by {killer}");
+        LastKillInfo = new PlayerKillInfo(killer, Object.InputAuthority);
 
         if (Object.HasStateAuthority)
         {
@@ -46,11 +50,17 @@ public class PlayerHealth : NetworkHealth
         }
     }
 
+    private void OnKillInfoChanged()
+    {
+        _playerKilledEvent.Raise(LastKillInfo);
+    }
+
+
     private Vector3 CalculateDamageDirection(PlayerRef attacker)
     {
         if (Runner.TryGetPlayerObject(attacker, out var attackerObj))
         {
-            return (attackerObj.transform.position - transform.position).normalized;
+            return (transform.position - attackerObj.transform.position).normalized;
         }
         return transform.forward; // Default to forward if attacker not found
     }
@@ -71,8 +81,8 @@ public class PlayerHealth : NetworkHealth
         float angle = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg;
 
         if (angle < -135f || angle > 135f) return 0f; // Back
-        if (angle < -45f) return 2f;                  // Left
-        if (angle > 45f) return 3f;                   // Right
+        if (angle > 45f) return 2f;                   // Left
+        if (angle < -45f) return 3f;                  // Right
         return 1f;                                    // Front
     }
     // private float GetDirectionIndex(Vector3 damageDirection)
@@ -117,5 +127,18 @@ public class PlayerHealth : NetworkHealth
     {
         MaxHealth = newMaxHealth;
         CurrentHealth = Mathf.Min(CurrentHealth, MaxHealth);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying || _deathDirection < 0) return;
+
+        Color[] dirColors = { Color.red, Color.green, Color.blue, Color.yellow };
+        int dirIndex = Mathf.RoundToInt(_deathDirection);
+        if (dirIndex >= 0 && dirIndex < dirColors.Length)
+        {
+            Gizmos.color = dirColors[dirIndex];
+            Gizmos.DrawRay(transform.position, transform.forward * 2f);
+        }
     }
 }

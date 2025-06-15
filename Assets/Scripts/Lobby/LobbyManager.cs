@@ -99,6 +99,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         }
         else
         {
+            Debug.Log("Local player toggling ready state.");
             TogglePlayerReady();
         }
     }
@@ -130,6 +131,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         }
         if (localPlayerData != null)
         {
+            Debug.Log($"Toggling ready state for player {localPlayerData.PlayerRef}. Current state: {localPlayerData.IsReady}");
             localPlayerData.RPC_SetReady(!localPlayerData.IsReady);
         }
     }

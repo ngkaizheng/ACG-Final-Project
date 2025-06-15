@@ -19,7 +19,6 @@ public class PlayerNickname : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {

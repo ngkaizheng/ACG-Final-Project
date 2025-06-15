@@ -16,7 +16,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private LobbyPlayerDataEvent _playerDataUpdatedEvent;
 
     private NetworkRunner Runner => LobbyManager.Instance.Runner;
-    private readonly Dictionary<PlayerRef, PlayerListItem> _playerListItems = new();
+    private readonly Dictionary<PlayerRef, PlayerListItem> _playerListItems = new Dictionary<PlayerRef, PlayerListItem>();
 
     public static LobbyUI Instance { get; private set; }
     private void Awake()
@@ -93,6 +93,10 @@ public class LobbyUI : MonoBehaviour
 
     public void UpdateSessionName(string sessionName)
     {
-        _sessionNameText.text = $"Room ID: {sessionName}";
+        // if currentsessionName > 6 characters, means quickplay, then set it to "Quick Play"
+        if (sessionName.Length > 6)
+            _sessionNameText.text = "Quick Play";
+        else
+            _sessionNameText.text = $"Room ID: {sessionName}";
     }
 }

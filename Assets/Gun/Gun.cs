@@ -43,71 +43,74 @@ public class Gun : NetworkBehaviour
 
     private void OnShootInfoChanged(NetworkBehaviourBuffer previous)
     {
-        Debug.Log($"OnShootInfoChanged: {ShootInfo.Direction}, {ShootInfo.BulletSpawnPoint}");
-        PlayShootingEffects(ShootInfo.Direction, ShootInfo.BulletSpawnPoint, ShootInfo.MadeImpact);
+        PlayShootingEffects(ShootInfo);
     }
 
-    private void PlayShootingEffects(Vector3 direction, Vector3 BulletSpawnPoint, bool madeImpact)
+    private void PlayShootingEffects(ShotInfo info)
     {
         ShootingSystem.Play();
 
-        Ray ray = new Ray(BulletSpawnPoint, direction);
-        // bool madeImpact = Physics.Raycast(ray, out var hit, MaxDistance, HitMask);
-        Physics.Raycast(ray, out var hit, MaxDistance, HitMask);
+        if (info.HitObjectId != default(NetworkId))
+        {
+            Vector3 endPoint = info.MadeImpact ? info.HitPosition : info.BulletSpawnPoint + info.Direction * MaxDistance;
 
-        Vector3 endPoint = madeImpact ? hit.point : BulletSpawnPoint + direction * MaxDistance;
-        TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint, Quaternion.identity);
+            // If the hit object is networked, find it using its NetworkId
+            NetworkObject hitObject = Runner.FindObject(info.HitObjectId);
 
-        StartCoroutine(AnimateTrail(trail, endPoint, madeImpact ? hit.normal : Vector3.zero, madeImpact, hit));
-    }
+            TrailRenderer trail = Instantiate(BulletTrail, info.BulletSpawnPoint, Quaternion.identity);
+            StartCoroutine(AnimateTrail(trail, endPoint, info.MadeImpact ? info.HitNormal : Vector3.zero, info.MadeImpact, hitObject?.transform));
+        }
+        else
+        {
+            Ray ray = new Ray(info.BulletSpawnPoint, info.Direction);
+            // bool madeImpact = Physics.Raycast(ray, out var hit, MaxDistance, HitMask);
+            Physics.Raycast(ray, out var hit, MaxDistance, HitMask);
 
-    private Vector3 GetSpreadDirection()
-    {
-        Quaternion spreadRotation = Quaternion.Euler(
-            0,
-            Random.Range(-spreadAngle, spreadAngle),
-            0
-        );
-        return spreadRotation * BulletSpawnPoint.forward;
+            Vector3 endPoint = info.MadeImpact ? hit.point : info.BulletSpawnPoint + info.Direction * MaxDistance;
+            TrailRenderer trail = Instantiate(BulletTrail, info.BulletSpawnPoint, Quaternion.identity);
+
+            StartCoroutine(AnimateTrail(trail, endPoint, info.MadeImpact ? hit.normal : Vector3.zero, info.MadeImpact, hit.transform));
+        }
+
+
     }
 
     private void CalculateShotDamage(Vector3 direction)
     {
         Ray ray = new Ray(BulletSpawnPoint.position, direction);
+        ShotInfo info = new ShotInfo
+        {
+            Direction = direction,
+            BulletSpawnPoint = BulletSpawnPoint.position,
+            MadeImpact = false
+        };
 
         if (Physics.Raycast(ray, out var hit, MaxDistance, HitMask))
         {
-
-            var damageable = hit.collider.GetComponentInParent<IDamageable>();
-            if (damageable != null)
+            if (Object.HasStateAuthority)
             {
-                Debug.Log($"Hit {hit.collider.gameObject.name} with damage {DamagePerShot}");
-                damageable.TakeDamage(DamagePerShot, Object.InputAuthority);
+                Debug.Log($"Hit: {hit.collider.name}");
+                var damageable = hit.collider.GetComponentInParent<IDamageable>();
+                damageable?.TakeDamage(DamagePerShot, Object.InputAuthority);
             }
-            ShootInfo = new ShotInfo
+
+            info.MadeImpact = true;
+            info.HitPosition = hit.point;
+            info.HitNormal = hit.normal;
+
+            // Store NetworkId if the hit object is networked
+            var hitNetworkObj = hit.collider.GetComponentInParent<NetworkObject>();
+            if (hitNetworkObj != null)
             {
-                Direction = direction,
-                BulletSpawnPoint = BulletSpawnPoint.position,
-                MadeImpact = true,
-                HitPosition = hit.point,
-                HitNormal = hit.normal,
-                HitObjectId = hit.collider.GetComponentInParent<NetworkObject>()?.Id ?? default(NetworkId)
-            };
-        }
-        else
-        {
-            Vector3 missPoint = BulletSpawnPoint.position + direction * MaxDistance;
-            ShootInfo = new ShotInfo
-            {
-                Direction = direction,
-                BulletSpawnPoint = BulletSpawnPoint.position,
-                MadeImpact = false
-            };
+                info.HitObjectId = hitNetworkObj.Id;
+            }
         }
 
+        ShootInfo = info;
     }
 
-    private IEnumerator AnimateTrail(TrailRenderer trail, Vector3 endPoint, Vector3 normal, bool madeImpact, RaycastHit hit = default)
+
+    private IEnumerator AnimateTrail(TrailRenderer trail, Vector3 endPoint, Vector3 normal, bool madeImpact, Transform hitTransform = null)
     {
         Vector3 startPosition = trail.transform.position;
         Vector3 direction = (endPoint - startPosition).normalized;
@@ -129,7 +132,7 @@ public class Gun : NetworkBehaviour
         if (madeImpact)
         {
             Vector3 impactPos = endPoint + normal * 0.01f;
-            Instantiate(ImpactParticleSystem, impactPos, Quaternion.LookRotation(normal), hit.transform);
+            Instantiate(ImpactParticleSystem, impactPos, Quaternion.LookRotation(normal), hitTransform);
             // REMOVE bounce logic and Physics.Raycast from here!
         }
         // if (madeImpact)
@@ -166,6 +169,17 @@ public class Gun : NetworkBehaviour
 
         Destroy(trail.gameObject, trail.time);
     }
+
+
+    private Vector3 GetSpreadDirection()
+    {
+        Quaternion spreadRotation = Quaternion.Euler(
+            0,
+            Random.Range(-spreadAngle, spreadAngle),
+            0
+        );
+        return spreadRotation * BulletSpawnPoint.forward;
+    }
 }
 
 public struct ShotInfo : INetworkStruct
@@ -176,4 +190,14 @@ public struct ShotInfo : INetworkStruct
     public Vector3 HitPosition;
     public Vector3 HitNormal;
     public NetworkId HitObjectId;
+
+    public ShotInfo(Vector3 direction, Vector3 bulletSpawnPoint, bool madeImpact = false, Vector3 hitPosition = default, Vector3 hitNormal = default, NetworkId hitObjectId = default)
+    {
+        Direction = direction;
+        BulletSpawnPoint = bulletSpawnPoint;
+        MadeImpact = madeImpact;
+        HitPosition = hitPosition;
+        HitNormal = hitNormal;
+        HitObjectId = hitObjectId;
+    }
 }

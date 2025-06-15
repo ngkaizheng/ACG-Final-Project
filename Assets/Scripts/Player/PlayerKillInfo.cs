@@ -1,7 +1,7 @@
 using Fusion;
 
 [System.Serializable]
-public struct PlayerKillInfo
+public struct PlayerKillInfo : INetworkStruct
 {
     public PlayerRef Killer;
     public PlayerRef Victim;

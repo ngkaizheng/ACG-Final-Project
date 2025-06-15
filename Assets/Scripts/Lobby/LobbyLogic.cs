@@ -67,12 +67,12 @@ public class LobbyLogic : MonoBehaviour
             // Shutdown the network runner
             await _runner.Shutdown();
 
-            // Destroy the runner GameObject
-            if (_runner.gameObject != null)
-            {
-                Destroy(_runner.gameObject);
-            }
-            _runner = null;
+            // // Destroy the runner GameObject
+            // if (_runner.gameObject != null)
+            // {
+            //     Destroy(_runner.gameObject);
+            // }
+            // _runner = null;
             MainMenuController.Instance.ShowSection(MenuState.MainMenu);
         }
     }

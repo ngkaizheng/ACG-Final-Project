@@ -67,7 +67,8 @@ public class Player : NetworkBehaviour
     {
         Vector2 move2D = input.Direction.normalized;
         Vector3 move = new Vector3(move2D.x, 0, move2D.y); // XZ plane
-        _cc.Move(_moveSpeed * move * Runner.DeltaTime);
+        _cc.Move(move);
+        // _characterController.Move(move * _moveSpeed * Runner.DeltaTime);
         // Vector3 move = new Vector3(input.Direction.x, 0, input.Direction.y).normalized * Runner.DeltaTime * 5f;
         // transform.position += move;
     }

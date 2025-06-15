@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameController : NetworkBehaviour
 {
@@ -12,10 +13,12 @@ public class GameController : NetworkBehaviour
     [SerializeField] private NetworkObject _playerPrefab;
     [SerializeField] private Transform[] _spawnPoints;
     [SerializeField] private float _respawnDelay = 3f;
-    [SerializeField] private TickTimer _despawnTimer = TickTimer.None;
 
+    [Header("Game Timer")]
+    [SerializeField] private float gameDurationSeconds = 60f; // 1 minute
+
+    [Networked] public TickTimer GameTimer { get; set; }
     [Networked] public NetworkDictionary<PlayerRef, TickTimer> _respawnTimers { get; }
-
     private Dictionary<PlayerRef, NetworkObject> _spawnedPlayers = new Dictionary<PlayerRef, NetworkObject>();
 
     public override void Spawned()
@@ -28,11 +31,53 @@ public class GameController : NetworkBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // if (Runner.IsServer)
-        // {
-        //     SpawnAllPlayers();
-        // }
+        if (Object.HasStateAuthority)
+        {
+            GameTimer = TickTimer.CreateFromSeconds(Runner, gameDurationSeconds);
+        }
     }
+
+    public override void Render()
+    {
+        if (!Object.IsValid) return;
+        // Only StateAuthority checks and triggers end game
+        if (Object.HasStateAuthority && GameTimer.Expired(Runner))
+        {
+            GameTimer = TickTimer.None; // Prevent multiple triggers
+            RPC_ShowEndGame();
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ShowEndGame()
+    {
+        EndGameUI.Instance.Show(isHost: Runner.IsServer);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_EndGame()
+    {
+        StartCoroutine(EndGameRoutine());
+    }
+    private IEnumerator EndGameRoutine()
+    {
+        // All clients (including host) disconnect and load main menu
+        if (!Runner.IsServer)
+        {
+            // Client: disconnect and load menu
+            Runner.Shutdown();
+            SceneManager.LoadScene(GameConfig.MainMenuSceneName);
+            yield break;
+        }
+        else
+        {
+            // Host: give clients a moment to process the RPC
+            yield return new WaitForSeconds(0.5f);
+            Runner.Shutdown();
+            SceneManager.LoadScene(GameConfig.MainMenuSceneName);
+        }
+    }
+
 
     #region Player Spawn Management
     private void SpawnAllPlayers()
@@ -64,31 +109,6 @@ public class GameController : NetworkBehaviour
         _spawnedPlayers.Add(playerRef, playerObj);
     }
 
-    // Called when player dies
-    // [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    // public void RPC_RequestRespawn(PlayerRef playerRef)
-    // {
-    //     if (!_respawnTimers.TryGet(playerRef, out var timer) || timer.ExpiredOrNotRunning(Runner))
-    //     {
-    //         var newTimer = TickTimer.CreateFromSeconds(Runner, _respawnDelay);
-    //         _respawnTimers.Set(playerRef, newTimer);
-    //         StartCoroutine(RespawnPlayerAfterDelay(playerRef));
-    //     }
-    // }
-
-    // private IEnumerator RespawnPlayerAfterDelay(PlayerRef playerRef)
-    // {
-    //     while (_respawnTimers.TryGet(playerRef, out var timer) && !timer.Expired(Runner))
-    //         yield return null;
-
-    //     if (_spawnedPlayers.ContainsKey(playerRef))
-    //     {
-    //         Runner.Despawn(_spawnedPlayers[playerRef]);
-    //         _spawnedPlayers.Remove(playerRef);
-    //     }
-    //     SpawnPlayer(playerRef);
-    //     _respawnTimers.Remove(playerRef);
-    // }
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PlayerDied(PlayerRef playerRef)
     {
