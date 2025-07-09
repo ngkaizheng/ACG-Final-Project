@@ -109,7 +109,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         {
             Runner.SessionInfo.IsOpen = false; // Lock the session
             Debug.Log("Starting game with " + Players.Count + " players.");
-            SceneRef gameScene = SceneRef.FromIndex(SceneUtility.GetBuildIndexByScenePath($"Assets/Scenes/{GameConfig.GameSceneName}.unity"));
+            SceneRef gameScene = SceneRef.FromIndex(SceneUtility.GetBuildIndexByScenePath($"Assets/Scenes/{GameConfig.GAME_SCENE}.unity"));
             Runner.LoadScene(gameScene, LoadSceneMode.Single);
         }
     }

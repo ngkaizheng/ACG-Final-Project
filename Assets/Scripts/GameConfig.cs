@@ -12,8 +12,10 @@ public static class GameConfig
     public const float NetworkTimeout = 30f; // seconds
 
     // UI settings
-    public const string MainMenuSceneName = "MainMenu";
-    public const string GameSceneName = "Game";
+    public const string MAIN_MENU_SCENE = "MainMenu";
+    public const string GAME_SCENE = "Game";
+
+    public static float LOOK_SENSITIVITY = 1.0f; // Default sensitivity for camera look
 
     public const bool isSharedMode = true;
 }

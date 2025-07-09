@@ -67,7 +67,7 @@ public class GameController : NetworkBehaviour
         {
             // Client: disconnect and load menu
             Runner.Shutdown();
-            SceneManager.LoadScene(GameConfig.MainMenuSceneName);
+            SceneManager.LoadScene(GameConfig.MAIN_MENU_SCENE);
             yield break;
         }
         else
@@ -75,7 +75,7 @@ public class GameController : NetworkBehaviour
             // Host: give clients a moment to process the RPC
             yield return new WaitForSeconds(0.5f);
             Runner.Shutdown();
-            SceneManager.LoadScene(GameConfig.MainMenuSceneName);
+            SceneManager.LoadScene(GameConfig.MAIN_MENU_SCENE);
         }
     }
 

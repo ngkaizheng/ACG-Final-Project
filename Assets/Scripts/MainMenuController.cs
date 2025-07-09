@@ -11,7 +11,7 @@ public class MainMenuController : MonoBehaviour
 
     [Header("Main Menu Section")]
     [SerializeField] private Button startGameButton;
-    [SerializeField] private Button settingsButton;
+    // [SerializeField] private Button settingsButton;
     [SerializeField] private Button exitButton;
 
     [Header("Multiplayer Section")]
@@ -27,12 +27,12 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Button lobbyBackButton;
     [SerializeField] private Button startGameInLobbyButton;
 
-    [Header("Settings Section")]
-    [SerializeField] private Button settingsBackButton;
+    // [Header("Settings Section")]
+    // [SerializeField] private Button settingsBackButton;
 
     [Header("Layout Settings")]
     [SerializeField] private GameObject mainMenuLayout;
-    [SerializeField] private GameObject settingsLayout;
+    // [SerializeField] private GameObject settingsLayout;
     [SerializeField] private GameObject multiplayerLayout;
     [SerializeField] private GameObject lobbyLayout;
 
@@ -48,7 +48,7 @@ public class MainMenuController : MonoBehaviour
 
         // Main menu buttons
         startGameButton.onClick.AddListener(() => ShowSection(MenuState.Multiplayer));
-        settingsButton.onClick.AddListener(() => ShowSection(MenuState.Settings));
+        // settingsButton.onClick.AddListener(() => ShowSection(MenuState.Settings));
         exitButton.onClick.AddListener(ExitGame);
 
         // Multiplayer buttons
@@ -62,7 +62,7 @@ public class MainMenuController : MonoBehaviour
         startGameInLobbyButton.onClick.AddListener(() => StartGameOrReadyInLobby());
 
         // Settings buttons
-        settingsBackButton.onClick.AddListener(() => ShowSection(MenuState.MainMenu));
+        // settingsBackButton.onClick.AddListener(() => ShowSection(MenuState.MainMenu));
     }
 
     private void Start()
@@ -79,7 +79,7 @@ public class MainMenuController : MonoBehaviour
         mainMenuLayout.SetActive(state == MenuState.MainMenu);
         multiplayerLayout.SetActive(state == MenuState.Multiplayer);
         lobbyLayout.SetActive(state == MenuState.Lobby);
-        settingsLayout.SetActive(state == MenuState.Settings);
+        // settingsLayout.SetActive(state == MenuState.Settings);
 
         if (state == MenuState.Lobby)
         {
@@ -186,5 +186,5 @@ public enum MenuState
     MainMenu,
     Multiplayer,
     Lobby,
-    Settings
+    // Settings
 }

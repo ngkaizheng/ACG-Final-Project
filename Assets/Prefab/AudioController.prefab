@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1145630843869682450
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6148304391976806146}
+  - component: {fileID: 5318821106284732542}
+  m_Layer: 0
+  m_Name: AudioController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6148304391976806146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1145630843869682450}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -953.29694, y: -648.4311, z: 0.6024929}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5318821106284732542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1145630843869682450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa67c5a83395353479975a1844a68d39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundEffectMappings:
+  - effect: 17
+    clip: {fileID: 8300000, guid: 48df7d91b9b6a764d947c87b0ada5ceb, type: 3}
+  - effect: 18
+    clip: {fileID: 8300000, guid: 1dd9db5ecbd33c2458f6ccc95eae3835, type: 3}
+  - effect: 19
+    clip: {fileID: 8300000, guid: 30ea352222e131b4287b1ce1d1fb87aa, type: 3}
+  - effect: 20
+    clip: {fileID: 8300000, guid: a7dc04461c279e34bbd07028b33fa3c1, type: 3}
+  - effect: 21
+    clip: {fileID: 8300000, guid: d8dd53ad633aba747b294ddbd3114dc4, type: 3}
+  - effect: 23
+    clip: {fileID: 8300000, guid: 5c30a5d9703678d4d9a0ed847fec8186, type: 3}
+  - effect: 6
+    clip: {fileID: 8300000, guid: 59cf03acd314e6642a9d6fb335888a10, type: 3}
+  - effect: 24
+    clip: {fileID: 8300000, guid: 6048c82d16f24c54bb0f7dd361de159a, type: 3}
+  - effect: 25
+    clip: {fileID: 8300000, guid: 3d9f440044542134aa3fa1260a5b09de, type: 3}
+  - effect: 26
+    clip: {fileID: 8300000, guid: 51621f424e4328143ad7e8feeb126723, type: 3}
+  - effect: 26
+    clip: {fileID: 8300000, guid: 5ecd2bf46bb8e8d4f9f899ca69110781, type: 3}
+  - effect: 26
+    clip: {fileID: 8300000, guid: 350936c6dec11e54491aafe8a202b1ac, type: 3}
+  - effect: 26
+    clip: {fileID: 8300000, guid: cd5bda22b99be004ba2bbda0056feba8, type: 3}
+  - effect: 27
+    clip: {fileID: 8300000, guid: 90c4930e0fab53a49ad534dba4b0acd2, type: 3}
+  - effect: 28
+    clip: {fileID: 8300000, guid: 28078c7d1411245439a662ed9bfea3af, type: 3}
+  musicTrackMappings:
+  - track: 0
+    clip: {fileID: 8300000, guid: 0e8889193915345498bbc6dac7c17813, type: 3}
+  - track: 1
+    clip: {fileID: 8300000, guid: a5a42c1f293a625478b7b3f1edf88496, type: 3}
+  - track: 5
+    clip: {fileID: 8300000, guid: 40a38e0a489991447930f2949a7c98eb, type: 3}
+  musicVolume: 1
+  sfxVolume: 1

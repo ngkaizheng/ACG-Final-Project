@@ -53,7 +53,7 @@ public class EndGameUI : MonoBehaviour
             // Optionally disconnect from Fusion session
             if (runner != null)
                 await runner.Shutdown();
-            SceneManager.LoadScene(GameConfig.MainMenuSceneName);
+            SceneManager.LoadScene(GameConfig.MAIN_MENU_SCENE);
         }
 
     }
