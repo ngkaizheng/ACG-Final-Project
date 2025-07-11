@@ -2238,6 +2238,8 @@ MonoBehaviour:
   _playerDataPrefab: {fileID: 8581489957324220057, guid: 4e6a3f8f47a103844a078731668dc5cb,
     type: 3}
   playerKilledEvent: {fileID: 11400000, guid: 02f97e57b988c6c48b52e8045559b96b, type: 2}
+  OnInitIngamePlayerDataEvent: {fileID: 11400000, guid: 910ef5e6d45befd4fb13be2595b4d18a,
+    type: 2}
   _playerDataDict:
     _items: []
   _debugPlayerDataList: []
@@ -2664,6 +2666,7 @@ GameObject:
   - component: {fileID: 410087042}
   - component: {fileID: 410087043}
   - component: {fileID: 410087044}
+  - component: {fileID: 410087045}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -2799,7 +2802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f3412a1231a89e4a8fef0b8ec44eeb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dayDurationInSeconds: 120
+  dayDurationInSeconds: 90
   lightColor:
     serializedVersion: 2
     key0: {r: 1, g: 1, b: 1, a: 1}
@@ -2832,10 +2835,30 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   minIntensity: 0.4
   maxIntensity: 1
-  dayPortion: 0.8
+  dayPortion: 0.85
   dayStartAngle: 0
   dayEndAngle: 180
   simulateInEditor: 0
+  _NetworkedDayTime: 0
+--- !u!114 &410087045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410087039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 116522570
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 410087044}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1001 &422779481
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7104,6 +7127,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2723061528883205002, guid: c24a46125fbadc440a0891aaa9b58751,
         type: 3}
+    - target: {fileID: 335675922472357947, guid: 8b6c63580367cb646b090f08aa189525,
+        type: 3}
+      propertyPath: gameDurationSeconds
+      value: 180
+      objectReference: {fileID: 0}
     - target: {fileID: 335675922472357947, guid: 8b6c63580367cb646b090f08aa189525,
         type: 3}
       propertyPath: _spawnPoints.Array.data[0]

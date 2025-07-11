@@ -57,6 +57,7 @@ public class SpawnUI : MonoBehaviour
 
     public void ShowSpawnPanel()
     {
+        if (GameController.Instance.IsGameOver) return;
         _spawnPanel.SetActive(true);
     }
 

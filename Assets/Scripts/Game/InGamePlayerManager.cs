@@ -13,6 +13,7 @@ public class InGamePlayerManager : NetworkBehaviour
 
     [Header("Event")]
     [SerializeField] private PlayerKillEvent playerKilledEvent;
+    [SerializeField] private GameEvent OnInitIngamePlayerDataEvent;
 
 
     [Networked, Capacity(8), OnChangedRender(nameof(OnPlayerDataChanged))]
@@ -54,6 +55,7 @@ public class InGamePlayerManager : NetworkBehaviour
             SpawnPlayerData(player);
         }
     }
+
     private void OnPlayerKilled(PlayerKillInfo info)
     {
         // Only allow State Authority(server/ master client in Host / Client, master client in Shared) to update stats
@@ -95,6 +97,7 @@ public class InGamePlayerManager : NetworkBehaviour
                     playerDataDict.Set(playerRef, data);
             }
         );
+        OnInitIngamePlayerDataEvent.Raise();
     }
 
     private void OnPlayerDataChanged()

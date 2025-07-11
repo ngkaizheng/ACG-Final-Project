@@ -6047,7 +6047,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "WASD \u2192 Move\nLeft Click \u2192 Attack"
+  m_text: "WASD \u2192 Move  \n\nLeft Click \u2192 Fire  \n\nE \u2192 Switch own
+    player's texture  \n\nMove Mouse \u2192 Rotate player to\nface the mouse pointer  "
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 592bb5dc230b52242803e03add721a54, type: 2}
   m_sharedMaterial: {fileID: 498030298457671194, guid: 592bb5dc230b52242803e03add721a54,

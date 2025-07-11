@@ -20,6 +20,7 @@ public class GameController : NetworkBehaviour
 
     [Networked] public TickTimer GameTimer { get; set; }
     [Networked] public NetworkDictionary<PlayerRef, TickTimer> _respawnTimers { get; }
+    [Networked] public bool IsGameOver { get; set; } = false;
     private Dictionary<PlayerRef, NetworkObject> _spawnedPlayers = new Dictionary<PlayerRef, NetworkObject>();
 
     public override void Spawned()
@@ -45,6 +46,7 @@ public class GameController : NetworkBehaviour
         if (Object.HasStateAuthority && GameTimer.Expired(Runner))
         {
             GameTimer = TickTimer.None; // Prevent multiple triggers
+            IsGameOver = true;
             RPC_ShowEndGame();
         }
     }

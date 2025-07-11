@@ -1,7 +1,8 @@
 using UnityEngine;
+using Fusion;
 
 [ExecuteAlways]
-public class SunRotation : MonoBehaviour
+public class SunRotation : NetworkBehaviour
 {
     [Header("Day/Night Cycle")]
     public float dayDurationInSeconds = 60f; // Real seconds for full cycle
@@ -22,19 +23,57 @@ public class SunRotation : MonoBehaviour
 
     private Light sunLight;
     private float rotationAngle;
+    // Networked variable to sync the sun's time across all clients
+    [Networked] public float NetworkedDayTime { get; set; }
 
     void Start()
     {
         sunLight = GetComponent<Light>();
     }
 
-    void Update()
+    // void Update()
+    // {
+    //     if (!Application.isPlaying && !simulateInEditor)
+    //         return;
+
+
+    //     float dayProgress = Mathf.Repeat(Time.time / dayDurationInSeconds, 1f);
+
+    //     float sunAngle;
+    //     if (dayProgress < dayPortion)
+    //     {
+    //         // Daytime: interpolate from dayStartAngle to dayEndAngle
+    //         float t = dayProgress / dayPortion;
+    //         sunAngle = Mathf.Lerp(dayStartAngle, dayEndAngle, t);
+    //     }
+    //     else
+    //     {
+    //         // Nighttime: interpolate from dayEndAngle to dayStartAngle + 360
+    //         float t = (dayProgress - dayPortion) / (1f - dayPortion);
+    //         sunAngle = Mathf.Lerp(dayEndAngle, dayStartAngle + 360f, t);
+    //     }
+
+    //     transform.rotation = Quaternion.Euler(sunAngle, 170, 0);
+
+    //     // Adjust light properties
+    //     sunLight.color = lightColor.Evaluate(dayProgress);
+    //     sunLight.intensity = Mathf.Lerp(minIntensity, maxIntensity,
+    //         Mathf.Sin(dayProgress * Mathf.PI));
+    // }
+
+    public override void Render()
     {
         if (!Application.isPlaying && !simulateInEditor)
             return;
 
+        // Only StateAuthority updates the time, others just follow
+        if (Object.HasStateAuthority)
+        {
+            float currentTime = Mathf.Repeat(Time.time, dayDurationInSeconds);
+            NetworkedDayTime = currentTime;
+        }
 
-        float dayProgress = Mathf.Repeat(Time.time / dayDurationInSeconds, 1f);
+        float dayProgress = NetworkedDayTime / dayDurationInSeconds;
 
         float sunAngle;
         if (dayProgress < dayPortion)

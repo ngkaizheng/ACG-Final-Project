@@ -24,6 +24,8 @@ public class PlayerInputController : NetworkBehaviour
         if (GetInput(out NetInput input))
         {
             if (!_player.isAlive()) return;
+            if (GameController.Instance.IsGameOver) return;
+
 
             // Debug.Log($"Processing input for player {Object.InputAuthority} at Tick: {Runner.Tick}, IsForward: {Runner.IsForward}, IsSimulation: {Runner.IsResimulation}");
             ProcessButtons(input, PreviousButtons);

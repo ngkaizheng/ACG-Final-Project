@@ -69,7 +69,7 @@ public class PlayerListItem : MonoBehaviour
 
     public void UpdatePlayerItem(string newName, bool isReady, bool isLocalPlayer)
     {
-        playerNameText.text = isLocalPlayer ? $"{newName} (YOU)" : newName;
+        playerNameText.text = isLocalPlayer ? $"{newName} (You)" : newName;
         if (readyButton != null)
         {
             readyButton.image.color = isReady ? UISettings.EnabledColor : UISettings.DisabledColor;

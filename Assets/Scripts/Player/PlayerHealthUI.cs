@@ -1,21 +1,39 @@
 using Fusion;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerHealthUI : NetworkBehaviour
 {
     [SerializeField] private Canvas _healthCanvas;
-    [SerializeField] private Image _healthFill;
     [SerializeField] private Vector3 _offset = new Vector3(0, 2f, 0); // Height above player
+
+    [Header("Health Bar Settings")]
+    [SerializeField] private Image _healthFill;
     [SerializeField] private float _smoothSpeed = 5f;
+
+    [Header("Player Name Settings")]
+    [SerializeField] private TMP_Text _nameText;
+
+    [Header("Events")]
+    [SerializeField] private GameEvent OnInitIngamePlayerDataEvent;
 
     private NetworkHealth _playerHealth;
     private float _targetFillAmount;
+    private InGamePlayerData _playerData;
+
+
+
+    private void Awake()
+    {
+        _healthCanvas = GetComponent<Canvas>();
+    }
 
     public override void Spawned()
     {
         _playerHealth = transform.root.GetComponentInParent<NetworkHealth>();
         _healthCanvas.worldCamera = Camera.main;
+        OnInitIngamePlayerData();
     }
 
     public override void Render()
@@ -50,5 +68,20 @@ public class PlayerHealthUI : NetworkBehaviour
             _healthFill.color = Color.yellow;
         else
             _healthFill.color = Color.red;
+    }
+
+    private void OnInitIngamePlayerData()
+    {
+        if (InGamePlayerManager.Instance != null)
+        {
+            if (InGamePlayerManager.Instance.playerDataDict.ContainsKey(Object.InputAuthority))
+            {
+                _playerData = InGamePlayerManager.Instance.playerDataDict[Object.InputAuthority];
+                if (_nameText != null && _playerData != null)
+                {
+                    _nameText.text = _playerData.GetNickname();
+                }
+            }
+        }
     }
 }

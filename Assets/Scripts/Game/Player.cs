@@ -53,6 +53,7 @@ public class Player : NetworkBehaviour
         if (GetInput(out NetInput input))
         {
             if (!isAlive()) return;
+            if (GameController.Instance.IsGameOver) return;
 
             UpdateMoveDirection(input);
             UpdateRotation(input);
