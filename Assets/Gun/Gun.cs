@@ -26,6 +26,20 @@ public class Gun : NetworkBehaviour
     [Networked] private TickTimer ShootCooldown { get; set; }
     [Networked] private NetworkBool BouncingBullets { get; set; }
 
+    [SerializeField] private AudioSource audioSource;
+
+    private void Awake()
+    {
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f; // 3D audio
+            audioSource.maxDistance = 15f; // Suitable for melee attack range
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+    }
+
     public void Shoot()
     {
         if (!ShootCooldown.ExpiredOrNotRunning(Runner)) return;
@@ -38,6 +52,7 @@ public class Gun : NetworkBehaviour
         if (Object.HasStateAuthority)
         {
             CalculateShotDamage(direction);
+            RPC_PlayShootingSound();
         }
     }
 
@@ -188,6 +203,16 @@ public class Gun : NetworkBehaviour
         );
         return spreadRotation * BulletSpawnPoint.forward;
     }
+
+    #region RPCs
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_PlayShootingSound()
+    {
+        audioSource.pitch = Random.Range(0.9f, 1.1f); // Random pitch for variation
+        AudioController.Instance.PlaySoundEffect(SoundEffect.Fire, audioSource);
+        audioSource.pitch = 1f; // Reset pitch
+    }
+    #endregion
 }
 
 public struct ShotInfo : INetworkStruct

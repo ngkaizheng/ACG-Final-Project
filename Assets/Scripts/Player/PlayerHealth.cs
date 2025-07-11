@@ -17,6 +17,19 @@ public class PlayerHealth : NetworkHealth
 
     [Networked, OnChangedRender(nameof(OnKillInfoChanged))]
     private PlayerKillInfo LastKillInfo { get; set; }
+    [SerializeField] private AudioSource audioSource;
+
+    private void Awake()
+    {
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f; // 3D audio
+            audioSource.maxDistance = 15f; // Suitable for melee attack range
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+    }
 
     protected override void OnDeath(PlayerRef killer)
     {
@@ -34,12 +47,8 @@ public class PlayerHealth : NetworkHealth
         Vector3 damageDir = CalculateDamageDirection(killer);
         _deathDirection = GetDirectionIndex(damageDir);
 
-        // // 3. Show death UI locally (after 1sec delay)
-        // if (Object.HasInputAuthority) // Only for local player
-        // {
-        //     Debug.Log()
-        //     StartCoroutine(ShowDeathUIAfterDelay(1f));
-        // }
+        // 3. Play Die Sound
+        RPC_PlayDieSound();
     }
 
     public override void OnAliveStateChanged()
@@ -141,4 +150,15 @@ public class PlayerHealth : NetworkHealth
             Gizmos.DrawRay(transform.position, transform.forward * 2f);
         }
     }
+
+
+    #region RPCs
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_PlayDieSound()
+    {
+        audioSource.pitch = Random.Range(0.9f, 1.1f); // Random pitch for variation
+        AudioController.Instance.PlaySoundEffect(SoundEffect.DiePlayer, audioSource);
+        audioSource.pitch = 1f; // Reset pitch
+    }
+    #endregion
 }
