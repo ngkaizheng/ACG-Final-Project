@@ -58,16 +58,15 @@ public class LeaderboardUI : MonoBehaviour
         //     sb.AppendLine($"{p.GetNickname(),-12}{p.Kills,8}{p.Deaths,8}");
         // }
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine("<b>LEADERBOARD</b>");
+        sb.AppendLine("LEADERBOARD\n");
 
-        var mspace = "0.8";
+        var mspace = "0.7";
 
         // Column headers with fixed-width spacing
         sb.AppendLine($"<mspace={mspace}em>{"NAME".PadRight(12)}</mspace>" +
                      $"<mspace={mspace}em>{"KILLS".PadLeft(6)}</mspace>" +
                      $"<mspace={mspace}em>{"DEATHS".PadLeft(8)}</mspace>");
 
-        // Player entries
         // Player entries
         foreach (var p in players)
         {

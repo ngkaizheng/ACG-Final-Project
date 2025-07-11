@@ -36,18 +36,21 @@ public class LobbyLogic : MonoBehaviour
     public async Task<StartGameResult> JoinRoom(string roomId)
     {
         _runner = Instantiate(_networkRunnerPrefab);
-        return await _runner.StartGame(new StartGameArgs
+        var result = await _runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.Shared,
+            GameMode = GameMode.Shared, // Use Shared for shared mode
             SessionName = roomId
         });
+
+        return result;
     }
+
     public async Task<StartGameResult> QuickPlay()
     {
         _runner = Instantiate(_networkRunnerPrefab);
         var result = await _runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.AutoHostOrClient,
+            GameMode = GameMode.Shared,
             MatchmakingMode = MatchmakingMode.FillRoom
         });
 

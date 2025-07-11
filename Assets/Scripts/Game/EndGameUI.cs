@@ -34,6 +34,10 @@ public class EndGameUI : MonoBehaviour
         this.isHost = isHost;
         if (panel != null) panel.SetActive(true);
         if (messageText != null) messageText.text = message;
+        if (SpawnUI.Instance != null)
+        {
+            SpawnUI.Instance.HideSpawnPanel();
+        }
     }
 
     public void Hide()

@@ -86,19 +86,34 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
         if (Runner.IsServer || Runner.IsSharedModeMasterClient)
         {
-            LobbyPlayerData playerData = null;
-            foreach (var p in Players)
+            // LobbyPlayerData playerData = null;
+            // foreach (var p in Players)
+            // {
+            //     if (p == null) continue; // Skip nulls (player already despawned)
+            //     if (p.PlayerRef == player)
+            //     {
+            //         playerData = p;
+            //         break;
+            //     }
+            // }
+            // if (playerData != null)
+            // {
+            //     Players.Remove(playerData);
+            //     if (playerData.Object != null)
+            //         Runner.Despawn(playerData.Object);
+            //     else
+            //         Debug.LogWarning("Tried to despawn a null NetworkObject for player: " + player);
+            // }
+            // OnPlayersChanged();
+
+            // Since when player left, the lobbyPlayerData is removed, so need to update Players, remove the null thing
+            for (int i = Players.Count - 1; i >= 0; i--)
             {
-                if (p.PlayerRef == player)
+                if (Players[i] == null)
                 {
-                    playerData = p;
-                    break;
+                    // Remove by reference since RemoveAt is not supported
+                    Players.Remove(Players[i]);
                 }
-            }
-            if (playerData != null)
-            {
-                Players.Remove(playerData);
-                Runner.Despawn(playerData.Object);
             }
         }
     }
@@ -132,6 +147,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         }
     }
 
+    #region CheckAllPlayersReady
     public bool CheckAllPlayersReady()
     {
         if (!(Runner.IsServer || Runner.IsSharedModeMasterClient)) return false;
@@ -145,6 +161,29 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         }
         return true;
     }
+
+    public (bool allReady, string statusMessage) GetGameStartStatus()
+    {
+        bool allReady = true;
+        string statusMessage = "";
+
+        foreach (var player in Players)
+        {
+            if (!player.IsReady) allReady = false;
+        }
+
+        if (!allReady)
+        {
+            statusMessage = "Waiting for all players to be ready...";
+        }
+        else
+        {
+            statusMessage = "Ready to start game!";
+        }
+
+        return (allReady, statusMessage);
+    }
+    #endregion
 
     public void TogglePlayerReady()
     {

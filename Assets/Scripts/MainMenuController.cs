@@ -26,6 +26,7 @@ public class MainMenuController : MonoBehaviour
     [Header("Lobby Section")]
     [SerializeField] private Button lobbyBackButton;
     [SerializeField] private Button startGameInLobbyButton;
+    [SerializeField] private TMP_Text startGameInLobbyButtonText;
 
     // [Header("Settings Section")]
     // [SerializeField] private Button settingsBackButton;
@@ -81,23 +82,24 @@ public class MainMenuController : MonoBehaviour
         lobbyLayout.SetActive(state == MenuState.Lobby);
         // settingsLayout.SetActive(state == MenuState.Settings);
 
-        if (state == MenuState.Lobby)
-        {
-            StartCoroutine(WaitForLobbyManagerInitialized());
-        }
+        // if (state == MenuState.Lobby)
+        // {
+        //     StartCoroutine(WaitForLobbyManagerInitialized());
+        // }
+        ResetUI();
     }
 
-    private IEnumerator WaitForLobbyManagerInitialized()
-    {
-        while (LobbyManager.Instance != null && !LobbyManager.Instance._isInitialized)
-        {
-            yield return null;
-        }
-        if (LobbyManager.Instance != null && LobbyUI.Instance != null)
-        {
-            LobbyUI.Instance.UpdateSessionName(LobbyManager.Instance._currentSessionName);
-        }
-    }
+    // private IEnumerator WaitForLobbyManagerInitialized()
+    // {
+    //     while (LobbyManager.Instance != null && !LobbyManager.Instance._isInitialized)
+    //     {
+    //         yield return null;
+    //     }
+    //     if (LobbyManager.Instance != null && LobbyUI.Instance != null)
+    //     {
+    //         LobbyUI.Instance.UpdateSessionName(LobbyManager.Instance._currentSessionName);
+    //     }
+    // }
 
     private async void ExitNetworkAndShowMainMenu()
     {
@@ -117,16 +119,19 @@ public class MainMenuController : MonoBehaviour
     #region Multiplayer Methods
     private async void CreateRoom()
     {
+        BlockerController.Instance.Show();
         //Random a room ID
         string roomId = $"{Random.Range(000000, 999999)}";
         var result = await lobbyLogic.CreateRoom(roomId);
         if (result.Ok)
         {
             ShowSection(MenuState.Lobby);
+            BlockerController.Instance.Hide();
         }
         else
         {
             multiplayerMainStatusText.text = $"Failed to create room: {result.ErrorMessage}";
+            BlockerController.Instance.Hide();
         }
     }
 
@@ -138,45 +143,99 @@ public class MainMenuController : MonoBehaviour
             roomInputFieldStatusText.text = "Please enter a valid room ID.";
             return;
         }
+        BlockerController.Instance.Show();
 
         var result = await lobbyLogic.JoinRoom(roomId);
         if (result.Ok)
         {
             ShowSection(MenuState.Lobby);
+            BlockerController.Instance.Hide();
+        }
+        else if (result.ShutdownReason == Fusion.ShutdownReason.GameNotFound)
+        {
+            roomInputFieldStatusText.text = "Room not found. Please check the room ID.";
+            BlockerController.Instance.Hide();
         }
         else
         {
             multiplayerMainStatusText.text = $"Failed to join room: {result.ErrorMessage}";
+            BlockerController.Instance.Hide();
         }
     }
 
     private async void QuickPlay()
     {
+        BlockerController.Instance.Show();
         var result = await lobbyLogic.QuickPlay();
         if (result.Ok)
         {
             ShowSection(MenuState.Lobby);
+            BlockerController.Instance.Hide();
+        }
+        else if (result.ShutdownReason == Fusion.ShutdownReason.GameNotFound)
+        {
+            CreateRoom();
         }
         else
         {
             multiplayerMainStatusText.text = $"Quick play failed: {result.ErrorMessage}";
+            BlockerController.Instance.Hide();
         }
     }
 
     public async void HandleLeftRoom(bool isKicked = false)
     {
+        BlockerController.Instance.Show();
+
         await lobbyLogic?.LeaveRoom();
         ShowSection(MenuState.MainMenu);
-        // Optional: Show kick notification
+
+        BlockerController.Instance.Hide();
     }
 
     private void StartGameOrReadyInLobby()
     {
-        Debug.Log("StartGameOrReadyInLobby called");
         if (LobbyManager.Instance != null)
         {
             LobbyManager.Instance.OnStartGameOrReadyClicked();
         }
+    }
+    #endregion
+
+    #region Lobby Methods
+    public void UpdateLobbyStartButtonText(bool isHost)
+    {
+        if (isHost)
+        {
+            startGameInLobbyButtonText.text = "START";
+        }
+        else
+        {
+            // Get the local player's ready status
+            bool isReady = false;
+            if (LobbyManager.Instance != null && LobbyManager.Instance.Runner != null)
+            {
+                foreach (var player in LobbyManager.Instance.Players)
+                {
+                    if (player.PlayerRef == LobbyManager.Instance.Runner.LocalPlayer)
+                    {
+                        isReady = player.IsReady;
+                        break;
+                    }
+                }
+            }
+            startGameInLobbyButtonText.text = isReady ? "READY" : "NOT READY";
+        }
+    }
+    #endregion
+
+    #region ResetUI
+    public void ResetUI()
+    {
+        roomIdInputField.text = string.Empty;
+        roomInputFieldStatusText.text = string.Empty;
+        multiplayerMainStatusText.text = string.Empty;
+        startGameInLobbyButtonText.text = "START";
     }
     #endregion
 }

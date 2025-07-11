@@ -36,10 +36,11 @@ public class LobbyPlayerData : NetworkBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     private void RPC_SetNickname(NetworkString<_32> nickname)
     {
         Nickname = nickname;
+        Debug.Log($"Player {PlayerRef} set nickname to: {Nickname}");
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -48,13 +49,20 @@ public class LobbyPlayerData : NetworkBehaviour
         IsReady = isReady;
     }
 
+    // public void RPC_KickPlayer()
+    // {
+    //     if (Runner.IsServer || Runner.IsSharedModeMasterClient)
+    //     {
+    //         // Runner.Disconnect(PlayerRef); // Force disconnect
+    //         // Runner.Despawn(Object); // Remove player object
+    //     }
+    // }
+    [Rpc(RpcSources.All, RpcTargets.InputAuthority)]
     public void RPC_KickPlayer()
     {
-        if (Runner.IsServer || Runner.IsSharedModeMasterClient)
-        {
-            Runner.Disconnect(PlayerRef); // Force disconnect
-            // Runner.Despawn(Object); // Remove player object
-        }
+        // This runs on the kicked player's client
+        Debug.Log("You have been kicked from the room.");
+        Runner.Shutdown();
     }
 
     private void OnDataChanged()
